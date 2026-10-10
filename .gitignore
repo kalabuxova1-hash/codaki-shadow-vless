@@ -1,0 +1,26 @@
+# Never commit a private VLESS subscription or generated credentials
+subscription.raw
+sub.decoded
+url.txt
+api.secret
+mobile-choice.json
+config.json
+xray-config.json
+fallback.json
+standby.json
+runtime-*.json
+status.json
+*.pid
+*.log
+*.secret
+*.zip
+*.tar.gz
+core
+xray
+ready
+manual-stop
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!*.example
