@@ -1,0 +1,6 @@
+id=gpt_vless_router
+name=Codaki Shadow VLESS
+version=0.0.1
+versionCode=1
+author=Codaki contributors
+description=Root-based Android VLESS XHTTP/Reality transport with explicit mobile server selection; no standalone VPN APK.
