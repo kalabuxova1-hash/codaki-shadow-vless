@@ -1,2 +1,62 @@
-# codaki-shadow-vless
-Root-based Android VLESS VPN: sing-box + Xray, automatic Wi-Fi/mobile routing, explicitly chosen cellular server and Codex/Mini Codex installation.
+# Codaki Shadow VLESS VPN
+
+**v0.0.1 · Android · Root · ARM64**
+
+Открытый проект на основе **нашего реально работающего «Теневого VLESS»**, установленного на Android. Оригинальные Python-скрипты и Magisk-служба перенесены с телефона; персональные конфиги, адреса серверов, UUID, ссылки на подписки и токены **не опубликованы**.
+
+**Что умеет:** системный VPN без отдельного VPN-APK, sing-box + Xray, VLESS Reality/TCP для Wi-Fi, TLS/XHTTP для мобильного интернета, собственный root TUN, переключение по типу сети, захват DNS, обнаружение существующего Android VPN, контроль соединения и восстановление процессов. На мобильной сети работает **только сервер, который владелец выбрал вручную**. При отсутствии или замене этого сервера конфигурация не переключается на случайный узел.
+
+## Установка через Codex / Mini Codex
+
+**[Открой CODEX_INSTALL.md](CODEX_INSTALL.md) и передай этот файл своему Codex или Mini Codex.** Агент проверит требования, установит компоненты и настроит приватную подписку. ПК не нужен при использовании Mini Codex на телефоне; обычный Codex на ПК может использовать ADB.
+
+Для ручного старта на новом телефоне (только root):
+
+    curl -fLsS https://raw.githubusercontent.com/kalabuxova1-hash/codaki-shadow-vless/main/bootstrap.sh -o /data/local/tmp/shadow-vless-bootstrap.sh
+    su -c 'sh /data/local/tmp/shadow-vless-bootstrap.sh'
+
+После установки VPN остаётся неактивным, пока не задана подписка и не выбран сервер:
+
+    su -c "/data/adb/gpt-vless/shadow-vless preview-sub 'https://YOUR-PRIVATE-SUBSCRIPTION'"
+    su -c "/data/adb/gpt-vless/shadow-vless set-sub 'https://YOUR-PRIVATE-SUBSCRIPTION' --mobile 1"
+    su -c '/data/adb/gpt-vless/shadow-vless status'
+
+Номер --mobile указывается **по списку MOBILE** из команды preview-sub, а не по общему номеру строки. Требуется минимум один Reality/TCP для Wi-Fi и один TLS/XHTTP для мобильного интернета.
+
+## Подписку можно менять после установки
+
+Mini Codex получает команды от пользователя и вызывает локальный менеджер — переустанавливать VPN не нужно.
+
+| Команда shadow-vless | Действие |
+|---|---|
+| nodes | Показать текущие серверы и номера мобильных |
+| preview-sub URL | Посмотреть другую подписку без применения |
+| set-sub URL --mobile N | Поменять подписку и выбрать мобильный сервер |
+| select-mobile N | Выбрать другой мобильный сервер |
+| refresh | Обновить подписку, сохранив строго выбранный узел |
+| status | Состояние TUN, VPN и выбранного сервера |
+| start / stop | Запустить или остановить VPN |
+
+При смене подписки старые локальные настройки сохраняются для отката при ошибке проверки. Не публикуйте личные VLESS-ссылки: они обычно содержат приватные ключи доступа.
+
+## Требования и ограничения
+
+- **Уже имеющийся root** на Android, Magisk-совместимые модули и работоспособный TUN/iptables/ip rule. Проект **не устанавливает Magisk и не получает root-права**.
+- Android ARM64, установленный Termux с Python. Установщик Python/Termux не устанавливает.
+- Доступ к официальным выпускам sing-box v1.14.2 и Xray v26.9.9 (бинарники скачиваются отдельно и проверяются по SHA-256 GitHub API).
+- Первая версия основана на конфигурации, проверенной на одном телефоне (Android 16/HyperOS); совместимость с другими прошивками и операторами не гарантируется. Не заявляем, что это универсальный обход блокировок.
+- Если на телефоне уже есть /data/adb/gpt-vless или модуль gpt_vless_router, установщик **откажется его перезаписывать**.
+
+## Структура
+
+- [src/failover.py](src/failover.py) — супервизор, мониторинг Wi-Fi/LTE, TUN, переключение режимов.
+- [src/update.py](src/update.py) — разбор собственной VLESS-подписки и строгий выбор XHTTP узла.
+- [src/generate.py](src/generate.py) — генерация и проверка конфигураций sing-box/Xray.
+- [src/dns_capture.py](src/dns_capture.py) — DNS-перенаправление приложений Android.
+- [src/manage.py](src/manage.py) — интерфейс команд для Codex/Mini Codex.
+- [magisk/](magisk/) — автозапуск модуля после загрузки.
+- [scripts/install.sh](scripts/install.sh), [bootstrap.sh](bootstrap.sh) — установка.
+
+**Безопасность:** приватная подписка, UUID, ключи, токены, конфиги и логи остаются только на телефоне в каталоге с root-доступом. В GitHub их нет. Root-сетевой модуль может влиять на работу устройства; проверяйте исходники перед установкой. Проект не подменяет системный root-менеджер.
+
+Third-party engines: [sing-box](https://github.com/SagerNet/sing-box) и [Xray-core](https://github.com/XTLS/Xray-core). Не являются оригинальной разработкой Codaki; лицензируются отдельно.
