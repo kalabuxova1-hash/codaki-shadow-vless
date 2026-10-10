@@ -5,6 +5,7 @@ No subscription or credentials are shipped with this project. The cellular
 server is selected by a persistent SHA-256 fingerprint, never by urltest.
 """
 import base64
+import binascii
 import hashlib
 import json
 import os
@@ -26,7 +27,7 @@ def decoded():
         if "vless://" not in raw:
             raise ValueError()
         return raw
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, binascii.Error):
         return blob.decode("utf-8")
 
 def nodes(text):
