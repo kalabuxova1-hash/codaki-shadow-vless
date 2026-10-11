@@ -47,6 +47,8 @@ globalcfg['inbounds'].append({
  'mtu':1400,'auto_route':True,'auto_redirect':True,'stack':'mixed',
  'exclude_uid':[0],
  'route_exclude_address':['10.0.0.0/8','172.16.0.0/12','192.168.0.0/16','169.254.0.0/16','224.0.0.0/4','fc00::/7','fe80::/10','ff00::/8']})
+import ru_direct
+ru_direct.patch_tun(globalcfg)
 for name,obj in [('standby.json',base),('fallback.json',globalcfg)]:
  p=D/name
  tmp=p.with_name(name+'.tmp')
