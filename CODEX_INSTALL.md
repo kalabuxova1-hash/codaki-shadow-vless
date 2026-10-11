@@ -1,6 +1,6 @@
 # Codaki Shadow VLESS — instructions for Codex / Mini Codex
 
-Version **0.0.2**. Repository: https://github.com/kalabuxova1-hash/codaki-shadow-vless
+Version **0.0.3**. Repository: https://github.com/kalabuxova1-hash/codaki-shadow-vless
 
 ## Task for the installation agent
 
@@ -30,8 +30,8 @@ Executable path: /data/adb/gpt-vless/shadow-vless. Mini Codex uses its root shel
 
 Source is adapted directly from the owner's running /data/adb/gpt-vless and gpt_vless_router Magisk-compatible module, with all private configurations omitted. Uses sing-box 1.14.2 and Xray 26.9.9. Has automatic network-type selection, independent root TUN when no other Android VPN is active, standby while another Android VPN runs, DNS capture and process recovery. Cellular routing is explicitly pinned to one chosen XHTTP server; Wi-Fi Reality nodes may be automatically tested. This is NOT a standalone VPN APK.
 
-Root/Magisk/Termux are PRE-EXISTING requirements; the project does not install or modify them. Version 0.0.2 targets ARM64 Android with compatible root, TUN/ip rules/iptables and Termux Python. Other ROMs are not yet validated.
+Root/Magisk/Termux are PRE-EXISTING requirements; the project does not install or modify them. Version 0.0.3 targets ARM64 Android with compatible root, TUN/ip rules/iptables and Termux Python. Other ROMs are not yet validated.
 
-## Upgrade of an existing installation (v0.0.2 source)
+## Обновление существующей установки — v0.0.3
 
-The existing-installation guard is intentional: do not rerun the fresh-install bootstrap. For an owner-authorized upgrade, compare the current and repository `failover.py`, back up the local original, copy only the verified generic source, run Python syntax/tests without touching `api.secret`, `subscription.raw`, `url.txt` or generated configs, and restart the supervisor only if a recoverable connectivity path is available. Verify VK UID direct routing on the active network and the continued VLESS routing of unrelated apps. Never publish logs or private node details. On existing devices, a repository source update alone does not update the running agent; report that limitation.
+Не запускайте установщик на работающем VPN — его защита от перезаписи обязательна. Новые компоненты: `src/ru_direct.py`, `src/generate.py`, `src/failover.py`, `src/dns_capture.py`. Для обновления вручную сохраните резервные копии, сверьте локальные скрипты с публичным кодом, выполните проверку Python и sing-box, предусмотрите откат при обрыве связи и только затем перезапустите супервизор. Не трогайте и не публикуйте `api.secret`, `subscription.raw`, `url.txt`, `mobile-choice.json` и runtime-config. Проверьте обход DNS/TUN для российских UID, маршруты через физический Wi-Fi или LTE, IPv6 и сохранение VLESS для зарубежных приложений. Публичная версия закрепляет один мобильный узел вручную; две группы приватной установки не скопированы. Одно обновление GitHub не обновляет телефон.
