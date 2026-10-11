@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 CHAIN='GCV_DNS'
 MARKER=Path('/data/adb/gpt-vless/dns-capture-owned')
+from ru_direct import app_uids
 def run(binary,args,check=False):
     p=subprocess.run([binary,'-w','5','-t','nat']+args,capture_output=True,timeout=8)
     if check and p.returncode:raise RuntimeError('DNS interception firewall command failed')
@@ -22,6 +23,8 @@ def set_enabled(enabled):
             MARKER.touch(mode=0o600)
             if not exists:run(binary,['-N',CHAIN],True)
             run(binary,['-A',CHAIN,'-m','owner','--uid-owner','0','-j','RETURN'],True)
+            for uid in sorted(set(app_uids().values())):
+                run(binary,['-A',CHAIN,'-m','owner','--uid-owner',str(uid),'-j','RETURN'],True)
             for protocol in ['udp','tcp']:
                 run(binary,['-A',CHAIN,'-p',protocol,'--dport','53','-j','REDIRECT','--to-ports','15353'],True)
             run(binary,['-I','OUTPUT','1','-j',CHAIN],True)
