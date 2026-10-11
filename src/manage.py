@@ -36,7 +36,7 @@ def write(name, value):
 def download(url):
     if not url.startswith("https://"):
         raise RuntimeError("Subscription URL must start with https://")
-    request = urllib.request.Request(url, headers={"User-Agent": "Codaki-Shadow-VLESS/0.0.1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "Codaki-Shadow-VLESS/0.0.3"})
     with urllib.request.urlopen(request, timeout=25) as resp:
         if not resp.url.startswith("https://"):
             raise RuntimeError("Refusing a non-HTTPS redirect")
