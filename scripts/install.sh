@@ -11,12 +11,12 @@ TMP=/data/local/tmp/codaki-shadow-vless-install-$$
 [ "$(id -u)" = "0" ] || { echo "ERROR: Run as Android root"; exit 1; }
 [ -x "$PY" ] || { echo "ERROR: Termux with Python is required (not installed by this script)"; exit 1; }
 [ -d /data/adb/modules ] || { echo "ERROR: Magisk-compatible module directory missing"; exit 1; }
-[ "$(getprop ro.product.cpu.abi)" = "arm64-v8a" ] || { echo "ERROR: v0.0.2 supports only Android arm64-v8a"; exit 1; }
+[ "$(getprop ro.product.cpu.abi)" = "arm64-v8a" ] || { echo "ERROR: v0.0.3 supports only Android arm64-v8a"; exit 1; }
 [ ! -e "$D/config.json" ] && [ ! -e "$MOD/module.prop" ] || {
     echo "ERROR: Existing VLESS installation found; refusing to overwrite or disconnect it"
     exit 1
 }
-for p in src/failover.py src/generate.py src/update.py src/manage.py src/dns_capture.py magisk/module.prop magisk/service.sh; do
+for p in src/failover.py src/generate.py src/update.py src/manage.py src/dns_capture.py src/ru_direct.py magisk/module.prop magisk/service.sh; do
     [ -s "$BASE/$p" ] || { echo "ERROR: Missing $p"; exit 1; }
 done
 mkdir -p "$TMP" "$D" "$MOD"
@@ -52,7 +52,7 @@ unzip -oq "$TMP/$XR_ARCHIVE" xray -d "$TMP"
 cp "$TMP/sing-box-$SB_VERSION-android-arm64/sing-box" "$D/core"
 cp "$TMP/xray" "$D/xray"
 chmod 700 "$D/core" "$D/xray"
-for name in failover generate update manage dns_capture; do
+for name in failover generate update manage dns_capture ru_direct; do
     cp "$BASE/src/$name.py" "$D/$name.py"
     chmod 700 "$D/$name.py"
 done
