@@ -97,6 +97,64 @@ def tun_policy(enabled):
  policy_state=enabled
  log('android_bound_socket_capture='+str(enabled))
 
+# Per-application routing: VK uses the underlying Wi-Fi/LTE network.
+# Other applications retain the system TUN; no private subscription data here.
+vk_bypass_state = None
+vk_bypass_last_check = 0
+
+def vk_direct_bypass(kind, netid):
+ global vk_bypass_state, vk_bypass_last_check
+ if kind not in ('wifi', 'mobile'):
+  return
+ if (kind, netid) == vk_bypass_state and time.monotonic() - vk_bypass_last_check < 30:
+  return
+ try:
+  iface = 'wlan0' if kind == 'wifi' else None
+  if not iface and netid is not None:
+   raw = subprocess.check_output(['/system/bin/dumpsys', 'connectivity'], timeout=5).decode(errors='replace')
+   match = re.search(r'NetworkAgentInfo\{network\{' + re.escape(str(netid)) + r'\}[^\n]*?InterfaceName:\s*([a-zA-Z0-9_.-]+)', raw)
+   if match:
+    iface = match.group(1)
+  if not iface or not re.fullmatch(r'(?:wlan[0-9]+|rmnet_data[0-9]+)', iface):
+   log('vk_bypass_invalid_underlying_interface')
+   return
+  packages = subprocess.check_output(['/system/bin/pm','list','packages','-U','com.vkontakte.android'], timeout=5).decode(errors='replace')
+  match = re.search(r'^package:com\.vkontakte\.android uid:(\d+)$', packages, re.M)
+  if not match:
+   log('vk_bypass_app_not_installed')
+   return
+  uid = match.group(1)
+  configured = False
+  for family in ('-4','-6'):
+   command = ['/system/bin/ip', family]
+   rules = subprocess.check_output(command + ['rule','show'], timeout=5).decode().splitlines()
+   existing = [line for line in rules if line.startswith('8998:')]
+   if len(existing) > 1 or any(
+       not re.search(r'\biif lo\b.*\buidrange '+re.escape(uid)+r'-'+re.escape(uid)+r'\s+lookup (?:wlan[0-9]+|rmnet_data[0-9]+)\b', line)
+       for line in existing):
+    raise RuntimeError('rule priority 8998 belongs to another owner')
+   defaults = subprocess.check_output(command + ['route','show','table',iface], timeout=5).decode()
+   has_route = bool(re.search(r'^default\s', defaults, re.M))
+   if has_route and existing and 'lookup '+iface in existing[0]:
+    configured = True
+    continue
+   if existing:
+    subprocess.run(command + ['rule','del','pref','8998'], check=True, stdout=subprocess.DEVNULL)
+   if has_route:
+    subprocess.run(command + ['rule','add','pref','8998','iif','lo','uidrange',uid+'-'+uid,'lookup',iface],
+                   check=True, stdout=subprocess.DEVNULL)
+    configured = True
+  if configured:
+   vk_bypass_state = (kind, netid)
+   vk_bypass_last_check = time.monotonic()
+   log('vk_direct_bypass_updated '+iface)
+  else:
+   vk_bypass_state = None
+   log('vk_direct_bypass_waiting_for_default_route')
+ except Exception as exc:
+  vk_bypass_state = None
+  log('vk_direct_bypass_failed '+type(exc).__name__+': '+str(exc)[:120])
+
 def current_tun():
  return pathlib.Path('/sys/class/net/gpttun0').exists()
 def generate():
@@ -140,6 +198,7 @@ try:
     log('underlying_network_changed; rebuilding routes and DNS')
    netid=current_netid;netmode=None;alternate=False;failed_until=0;lastcheck=0
   target='standby' if vpn or time.monotonic()<failed_until else 'fallback'
+  vk_direct_bypass(kind,current_netid)
   if target!=mode:
    tun_policy(False)
    stop(cp,'core-'+str(mode))

@@ -11,7 +11,7 @@ TMP=/data/local/tmp/codaki-shadow-vless-install-$$
 [ "$(id -u)" = "0" ] || { echo "ERROR: Run as Android root"; exit 1; }
 [ -x "$PY" ] || { echo "ERROR: Termux with Python is required (not installed by this script)"; exit 1; }
 [ -d /data/adb/modules ] || { echo "ERROR: Magisk-compatible module directory missing"; exit 1; }
-[ "$(getprop ro.product.cpu.abi)" = "arm64-v8a" ] || { echo "ERROR: v0.0.1 supports only Android arm64-v8a"; exit 1; }
+[ "$(getprop ro.product.cpu.abi)" = "arm64-v8a" ] || { echo "ERROR: v0.0.2 supports only Android arm64-v8a"; exit 1; }
 [ ! -e "$D/config.json" ] && [ ! -e "$MOD/module.prop" ] || {
     echo "ERROR: Existing VLESS installation found; refusing to overwrite or disconnect it"
     exit 1
